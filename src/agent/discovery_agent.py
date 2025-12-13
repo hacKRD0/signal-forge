@@ -15,6 +15,8 @@ from .prompts import (
     CUSTOMER_DISCOVERY_PROMPT,
     PARTNER_DISCOVERY_PROMPT,
 )
+from .query_builder import QueryBuilder
+from ..models.business_context import BusinessContext
 
 
 logger = logging.getLogger(__name__)
@@ -64,6 +66,7 @@ class DiscoveryAgent:
             self.temperature = temperature
             self.enable_web_search = enable_web_search
             self.interaction_log: List[Dict[str, Any]] = []
+            self.query_builder = QueryBuilder()
 
             logger.info(
                 f"DiscoveryAgent initialized with model={model}, "
@@ -153,6 +156,55 @@ class DiscoveryAgent:
                 metadata={"error": str(e)},
             )
             raise RuntimeError(error_msg) from e
+
+    def _format_discovery_prompt(
+        self, prompt_template: str, context: Dict[str, Any], queries: List[str]
+    ) -> str:
+        """Format discovery prompt with context and queries.
+
+        Combines the system prompt template with business context and suggested
+        search queries into a complete prompt for the agent.
+
+        Args:
+            prompt_template: The base system prompt (customer or partner discovery)
+            context: Business context dictionary
+            queries: List of search query strings to include
+
+        Returns:
+            str: Formatted prompt string ready for agent consumption
+
+        Example:
+            >>> prompt = agent._format_discovery_prompt(
+            ...     CUSTOMER_DISCOVERY_PROMPT,
+            ...     context_dict,
+            ...     ["marketing agencies in US", "SMB marketing firms"]
+            ... )
+        """
+        # Format context as string
+        context_str = json.dumps(context, indent=2)
+
+        # Format queries as numbered list
+        queries_str = "\n".join(f"{i+1}. {q}" for i, q in enumerate(queries))
+
+        # Combine into full prompt
+        formatted_prompt = f"""{prompt_template}
+
+---
+
+**Business Context:**
+{context_str}
+
+---
+
+**Suggested Search Queries:**
+
+Use these targeted search queries to find the best matches:
+
+{queries_str}
+
+For each query, use the web search tool to find relevant companies. Analyze the results and return the top prospects in the specified JSON format."""
+
+        return formatted_prompt
 
     def extract_context(self, document_text: str) -> Dict[str, Any]:
         """Extract business context from a document.
@@ -247,19 +299,24 @@ class DiscoveryAgent:
         logger.info("Finding potential customers")
 
         try:
-            # Prepare the context description
-            context_str = json.dumps(business_context, indent=2)
+            # Convert dict to BusinessContext for query generation
+            context = BusinessContext.from_dict(business_context)
 
-            # Add filters if provided
-            filter_str = ""
-            if filters:
-                filter_str = f"\n\nAdditional filters:\n{json.dumps(filters, indent=2)}"
+            # Generate targeted search queries
+            queries = self.query_builder.build_customer_queries(context, filters)
+            logger.info(f"Generated {len(queries)} customer search queries: {queries}")
 
-            user_input = f"Business Context:\n{context_str}{filter_str}"
+            # Format the complete discovery prompt with context and queries
+            formatted_prompt = self._format_discovery_prompt(
+                CUSTOMER_DISCOVERY_PROMPT,
+                business_context,
+                queries
+            )
 
+            # Execute discovery with formatted prompt
             response_text = self._generate_content(
-                system_prompt=CUSTOMER_DISCOVERY_PROMPT,
-                user_input=user_input,
+                system_prompt=formatted_prompt,
+                user_input="Please search for and identify potential customers.",
                 operation="find_customers",
             )
 
@@ -312,19 +369,24 @@ class DiscoveryAgent:
         logger.info("Finding potential partners")
 
         try:
-            # Prepare the context description
-            context_str = json.dumps(business_context, indent=2)
+            # Convert dict to BusinessContext for query generation
+            context = BusinessContext.from_dict(business_context)
 
-            # Add filters if provided
-            filter_str = ""
-            if filters:
-                filter_str = f"\n\nAdditional filters:\n{json.dumps(filters, indent=2)}"
+            # Generate targeted search queries
+            queries = self.query_builder.build_partner_queries(context, filters)
+            logger.info(f"Generated {len(queries)} partner search queries: {queries}")
 
-            user_input = f"Business Context:\n{context_str}{filter_str}"
+            # Format the complete discovery prompt with context and queries
+            formatted_prompt = self._format_discovery_prompt(
+                PARTNER_DISCOVERY_PROMPT,
+                business_context,
+                queries
+            )
 
+            # Execute discovery with formatted prompt
             response_text = self._generate_content(
-                system_prompt=PARTNER_DISCOVERY_PROMPT,
-                user_input=user_input,
+                system_prompt=formatted_prompt,
+                user_input="Please search for and identify potential partners.",
                 operation="find_partners",
             )
 
