@@ -6,7 +6,7 @@ Build a working Google ADK prototype that discovers potential customers and part
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Document Processing** - Project setup, dependencies, document parsers
+- [x] **Phase 1: Foundation & Document Processing** - Project setup, dependencies, document parsers
 - [ ] **Phase 2: Agent Core** - Google ADK agent with context understanding and query formulation
 - [ ] **Phase 3: Discovery Engine** - Customer and partner discovery using web search
 - [ ] **Phase 4: Rationale & Scoring Agent** - Match scoring and rationale generation
@@ -31,7 +31,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Google ADK agent setup with system prompts
+- [x] 02-01: Google ADK agent setup with system prompts (2025-12-13)
 - [ ] 02-02: Context extraction from parsed documents
 - [ ] 02-03: Query formulation logic for customer/partner discovery
 
@@ -80,7 +80,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Document Processing | 3/3 | Complete | 2025-12-13 |
-| 2. Agent Core | 0/3 | Not started | - |
+| 2. Agent Core | 1/3 | In progress | - |
 | 3. Discovery Engine | 0/3 | Not started | - |
 | 4. Rationale & Scoring Agent | 0/3 | Not started | - |
 | 5. UI & Presentation | 0/3 | Not started | - |
