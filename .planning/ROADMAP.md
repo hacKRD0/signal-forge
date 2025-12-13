@@ -22,7 +22,7 @@ Build a working Google ADK prototype that discovers potential customers and part
 
 Plans:
 - [x] 01-01: Project structure, dependencies, Google ADK setup (2025-12-13)
-- [ ] 01-02: Document parsers (DOCX, PDF)
+- [x] 01-02: Document parsers (DOCX, PDF) (2025-12-13)
 - [ ] 01-03: Document parsers (CSV, PPTX) + unified interface
 
 ### Phase 2: Agent Core
@@ -79,7 +79,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Document Processing | 1/3 | In progress | - |
+| 1. Foundation & Document Processing | 2/3 | In progress | - |
 | 2. Agent Core | 0/3 | Not started | - |
 | 3. Discovery Engine | 0/3 | Not started | - |
 | 4. Rationale & Scoring Agent | 0/3 | Not started | - |
