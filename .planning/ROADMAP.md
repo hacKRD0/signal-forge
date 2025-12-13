@@ -32,7 +32,7 @@ Plans:
 
 Plans:
 - [x] 02-01: Google ADK agent setup with system prompts (2025-12-13)
-- [ ] 02-02: Context extraction from parsed documents
+- [x] 02-02: Context extraction from parsed documents (2025-12-13)
 - [ ] 02-03: Query formulation logic for customer/partner discovery
 
 ### Phase 3: Discovery Engine
@@ -80,7 +80,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Document Processing | 3/3 | Complete | 2025-12-13 |
-| 2. Agent Core | 1/3 | In progress | - |
+| 2. Agent Core | 2/3 | In progress | - |
 | 3. Discovery Engine | 0/3 | Not started | - |
 | 4. Rationale & Scoring Agent | 0/3 | Not started | - |
 | 5. UI & Presentation | 0/3 | Not started | - |

@@ -4,3 +4,4 @@ python-docx>=1.0.0
 PyPDF2>=3.0.0
 pandas>=2.0.0
 python-pptx>=0.6.0
+pytest>=7.0.0
