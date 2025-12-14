@@ -157,6 +157,108 @@ Return ONLY a JSON object with your score and brief reasoning:
             # Return neutral score on error to avoid losing candidates
             return 0.5
 
+    def score_partner_relevance(
+        self, company: CompanyInfo, context: BusinessContext
+    ) -> float:
+        """Score a company's relevance as a potential partner.
+
+        Uses the agent to analyze the company against the business context and
+        return a partnership relevance score from 0.0 to 1.0. Partnership scoring
+        focuses on complementary fit, not customer need.
+
+        Args:
+            company: CompanyInfo to score
+            context: BusinessContext to score against
+
+        Returns:
+            float: Partnership relevance score from 0.0 (not relevant) to 1.0 (highly relevant)
+
+        Raises:
+            ValueError: If company or context is None
+            RuntimeError: If scoring fails
+
+        Example:
+            >>> scorer = RelevanceScorer(agent)
+            >>> score = scorer.score_partner_relevance(company, context)
+            >>> print(score >= RelevanceScorer.RELEVANCE_THRESHOLD)
+            True
+        """
+        if company is None:
+            raise ValueError("company cannot be None")
+        if context is None:
+            raise ValueError("context cannot be None")
+
+        # Check cache first
+        cache_key = self._make_cache_key(company, context, "partner")
+        if cache_key in self._score_cache:
+            logger.debug(f"Using cached score for {company.name}")
+            return self._score_cache[cache_key]
+
+        logger.info(f"Scoring partner relevance for: {company.name}")
+
+        try:
+            # Create partnership scoring prompt
+            scoring_prompt = f"""Score this company as a potential partner on a scale of 0.0 to 1.0.
+
+**Business Context (Our Company):**
+- Industry: {context.industry or 'N/A'}
+- Products/Services: {', '.join(context.products_services) if context.products_services else 'N/A'}
+- Target Market: {context.target_market or 'N/A'}
+- Geography: {', '.join(context.geography) if context.geography else 'N/A'}
+- Key Strengths: {', '.join(context.key_strengths) if context.key_strengths else 'N/A'}
+
+**Company to Score (Potential Partner):**
+- Name: {company.name}
+- Website: {company.website}
+- Description: {company.description or 'N/A'}
+- Locations: {', '.join(company.locations) if company.locations else 'N/A'}
+- Size: {company.size_estimate}
+
+**Partnership Scoring Guidelines:**
+- 0.9-1.0: Excellent fit - Highly complementary services, strong integration opportunities, shared target market
+- 0.7-0.8: Strong fit - Good synergies, compatible business models, clear partnership value
+- 0.6: Good fit - Some complementary aspects, reasonable partnership potential
+- 0.4-0.5: Weak fit - Limited synergies or unclear partnership value
+- 0.0-0.3: Poor fit - Direct competitor, conflicting services, or no complementary value
+
+**Evaluation Criteria:**
+1. Complementary services (do they offer services that complement ours?)
+2. Integration opportunities (could our products/services integrate?)
+3. Shared target market (do we serve similar customer segments?)
+4. Compatible business models (are our approaches compatible?)
+5. NOT direct competitors (avoid companies offering identical services)
+
+**Threshold: Scores >= 0.6 are considered relevant**
+
+Return ONLY a JSON object with your score and brief reasoning:
+{{
+  "score": 0.85,
+  "reasoning": "Brief explanation of partnership potential and complementary fit"
+}}
+"""
+
+            # Use agent to score
+            response = self.agent._generate_content(
+                system_prompt=scoring_prompt,
+                user_input=f"Score {company.name} as a potential partner",
+                operation="score_partner_relevance",
+            )
+
+            # Parse score from response
+            score = self._parse_score(response)
+
+            # Cache the score
+            self._score_cache[cache_key] = score
+
+            logger.info(f"Scored {company.name}: {score:.2f}")
+            return score
+
+        except Exception as e:
+            error_msg = f"Failed to score partner relevance for {company.name}: {e}"
+            logger.error(error_msg)
+            # Return neutral score on error to avoid losing candidates
+            return 0.5
+
     def batch_score(
         self,
         companies: List[CompanyInfo],
@@ -198,9 +300,10 @@ Return ONLY a JSON object with your score and brief reasoning:
             try:
                 if entity_type == "customer":
                     score = self.score_customer_relevance(company, context)
+                elif entity_type == "partner":
+                    score = self.score_partner_relevance(company, context)
                 else:
-                    # Partner scoring will be similar but with different criteria
-                    # For now, use customer scoring as fallback
+                    logger.warning(f"Unknown entity_type '{entity_type}', defaulting to customer")
                     score = self.score_customer_relevance(company, context)
 
                 scored_companies.append((company, score))
