@@ -1,11 +1,11 @@
 """UI components for the Streamlit application.
 
 This module provides reusable UI components including the header, file uploader,
-and context summary display.
+context summary display, and discovery input.
 """
 
 import streamlit as st
-from typing import List
+from typing import List, Tuple, Dict, Any
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from src.models.business_context import BusinessContext
@@ -107,3 +107,86 @@ def render_context_summary(context: BusinessContext):
             context.additional_notes
         ]):
             st.info("No business context information extracted yet.")
+
+
+def render_discovery_input() -> Tuple[str, Dict[str, Any]]:
+    """Render the discovery input form with entity type and optional filters.
+
+    Displays a form for selecting the type of entity to discover (Customer or Partner)
+    and optional filters for geography and industry. Returns the selected entity type
+    and a dictionary of filters.
+
+    Returns:
+        Tuple containing:
+        - entity_type: str - Either "Customer" or "Partner"
+        - filters: dict - Dictionary with optional keys:
+            - "geography": list of selected regions
+            - "industry": list of selected industries
+            - Empty dict if no filters selected
+
+    Example:
+        >>> entity_type, filters = render_discovery_input()
+        >>> if entity_type:
+        ...     st.write(f"Discovering {entity_type}s")
+        ...     if filters:
+        ...         st.write(f"Filters: {filters}")
+    """
+    # Entity type selector
+    entity_type = st.radio(
+        "Discovery Type",
+        options=["Customer", "Partner"],
+        help="Select whether you want to discover potential customers or partners"
+    )
+
+    # Natural language request (optional, for future use)
+    st.text_input(
+        "Natural Language Request (Optional)",
+        help="Describe any specific requirements or preferences for discovery",
+        value=""
+    )
+
+    # Optional filters
+    filters: Dict[str, Any] = {}
+
+    with st.expander("Optional Filters"):
+        # Geography filter
+        geography_options = [
+            "North America",
+            "Europe",
+            "Asia",
+            "Latin America",
+            "Middle East & Africa",
+            "Oceania"
+        ]
+        selected_geography = st.multiselect(
+            "Geography",
+            options=geography_options,
+            help="Select geographic regions to focus discovery"
+        )
+        if selected_geography:
+            filters["geography"] = selected_geography
+
+        # Industry filter
+        industry_options = [
+            "Technology",
+            "Healthcare",
+            "Finance",
+            "Manufacturing",
+            "Retail",
+            "Energy",
+            "Telecommunications",
+            "Transportation",
+            "Education",
+            "Real Estate",
+            "Hospitality",
+            "Media & Entertainment"
+        ]
+        selected_industry = st.multiselect(
+            "Industry",
+            options=industry_options,
+            help="Select industries to focus discovery"
+        )
+        if selected_industry:
+            filters["industry"] = selected_industry
+
+    return entity_type, filters

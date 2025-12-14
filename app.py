@@ -8,12 +8,19 @@ Run with: streamlit run app.py
 
 import streamlit as st
 import os
+import logging
 from dotenv import load_dotenv
 
-from src.ui.components import render_header, render_file_uploader, render_context_summary
+from src.ui.components import render_header, render_file_uploader, render_context_summary, render_discovery_input
 from src.ui.document_processor import process_uploaded_files
+from src.ui.discovery_runner import run_discovery
+from src.ui.error_handler import handle_discovery_error, validate_discovery_preconditions, show_discovery_info
 from src.agent.discovery_agent import DiscoveryAgent
 from src.agent.context_extractor import ContextExtractor
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -117,9 +124,49 @@ if st.session_state.uploaded_context:
     st.markdown("---")
     render_context_summary(st.session_state.uploaded_context)
 
-# Query input section (placeholder for now)
-st.header("2. Discovery Query")
-st.info("Query input will be added in the next phase")
+    # Discovery query section
+    st.header("2. Discovery Query")
+
+    # Validate preconditions
+    if not validate_discovery_preconditions():
+        st.stop()
+
+    # Show info about discovery process
+    show_discovery_info()
+
+    # Get discovery input
+    entity_type, filters = render_discovery_input()
+
+    # Generate button
+    if st.button("Generate", type="primary", use_container_width=True):
+        try:
+            # Show processing spinner
+            with st.spinner(f"Discovering {entity_type}s..."):
+                # Run discovery
+                result = run_discovery(
+                    entity_type=entity_type,
+                    context=st.session_state.uploaded_context,
+                    filters=filters,
+                    target_count=10
+                )
+
+                # Store result in appropriate session state
+                if entity_type == "Customer":
+                    st.session_state.discovery_results_customers = result
+                else:  # Partner
+                    st.session_state.discovery_results_partners = result
+
+                # Show success message
+                st.success(f"Found {len(result.companies)} {entity_type.lower()}s!")
+
+        except Exception as e:
+            handle_discovery_error(e, entity_type)
+            logger.error(f"Discovery error: {e}", exc_info=True)
+
+else:
+    # Query input section (only show if context exists)
+    st.header("2. Discovery Query")
+    st.info("Upload and process documents first to enable discovery")
 
 # Results section (placeholder for now)
 st.header("3. Discovery Results")
