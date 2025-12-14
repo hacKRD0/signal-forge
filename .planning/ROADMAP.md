@@ -61,7 +61,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: Streamlit app structure + file upload component
+- [x] 05-01: Streamlit app structure + file upload component (2025-12-14)
 - [ ] 05-02: Query input interface + filters (geography, industry)
 - [ ] 05-03: Results table with all fields (name, website, locations, size, rationale, sources)
 
@@ -83,5 +83,5 @@ Plans:
 | 2. Agent Core | 3/3 | Complete | 2025-12-13 |
 | 3. Discovery Engine | 3/3 | Complete | 2025-12-13 |
 | 4. Rationale & Scoring Agent | 3/3 | Complete | 2025-12-13 |
-| 5. UI & Presentation | 0/3 | Not started | - |
+| 5. UI & Presentation | 1/3 | In progress | - |
 | 6. Tracing & Documentation | 0/3 | Not started | - |

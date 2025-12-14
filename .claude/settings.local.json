@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(taches-cc-resources:create-plans)",
+      "Bash([ -f .planning/ROADMAP.md ])",
+      "Bash(mkdir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\01-foundation-document-processing\\01-01-SUMMARY.md\" ])",
+      "Bash(python -m venv:*)",
+      "Bash(./venv/Scripts/pip install:*)",
+      "Bash(./venv/Scripts/python:*)",
+      "Bash(./venv/Scripts/pip list:*)",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\01-foundation-document-processing\\01-02-SUMMARY.md\" ])",
+      "Bash(D:/easevertical/venv/Scripts/pip install:*)",
+      "Bash(D:/easevertical/venv/Scripts/python:*)",
+      "Bash(D:/easevertical/venv/Scripts/pip list:*)",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\01-foundation-document-processing\\01-03-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\02-agent-core\\02-01-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\02-agent-core\\02-02-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\02-agent-core\\02-03-SUMMARY.md\" ])",
+      "Bash(PYTHONPATH=D:/easevertical D:/easevertical/venv/Scripts/python:*)",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\03-discovery-engine\\03-01-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\03-discovery-engine\\03-02-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\03-discovery-engine\\03-03-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\04-rationale-scoring-agent\\04-01-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\04-rationale-scoring-agent\\04-02-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\04-rationale-scoring-agent\\04-03-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\05-ui-presentation\\05-01-SUMMARY.md\" ])",
+      "Bash(python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
