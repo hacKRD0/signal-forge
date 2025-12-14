@@ -14,6 +14,8 @@ from .web_search import WebSearchEngine
 from .relevance_scorer import RelevanceScorer
 from ..models.business_context import BusinessContext
 from ..models.discovery_results import DiscoveryResult, CompanyInfo
+from ..scoring.match_scorer import MatchScorer
+from ..scoring.rationale_generator import RationaleGenerator
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +56,8 @@ class PartnerDiscovery:
         agent: DiscoveryAgent,
         search_engine: WebSearchEngine,
         query_builder: QueryBuilder,
+        scorer: MatchScorer,
+        rationale_gen: RationaleGenerator,
     ):
         """Initialize the partner discovery orchestrator.
 
@@ -61,6 +65,8 @@ class PartnerDiscovery:
             agent: DiscoveryAgent instance for AI operations
             search_engine: WebSearchEngine instance for searching
             query_builder: QueryBuilder instance for query generation
+            scorer: MatchScorer instance for scoring matches
+            rationale_gen: RationaleGenerator instance for generating explanations
 
         Raises:
             ValueError: If any required dependency is None
@@ -71,11 +77,17 @@ class PartnerDiscovery:
             raise ValueError("search_engine cannot be None")
         if query_builder is None:
             raise ValueError("query_builder cannot be None")
+        if scorer is None:
+            raise ValueError("scorer cannot be None")
+        if rationale_gen is None:
+            raise ValueError("rationale_gen cannot be None")
 
         self.agent = agent
         self.search_engine = search_engine
         self.query_builder = query_builder
         self.relevance_scorer = RelevanceScorer(agent)
+        self.scorer = scorer
+        self.rationale_gen = rationale_gen
 
         logger.info("PartnerDiscovery initialized")
 
@@ -159,27 +171,67 @@ class PartnerDiscovery:
                     query_used=", ".join(queries),
                 )
 
-            # Step 4: Enrich top candidates
-            logger.info(f"Step 4: Enriching top {target_count} candidates")
+            # Step 4: Score top candidates
+            logger.info(f"Step 4: Scoring top {target_count} candidates")
             top_candidates = relevant_candidates[:target_count]
-            enriched_candidates = []
+            scored_candidates = []
 
             for i, candidate in enumerate(top_candidates, 1):
-                logger.info(f"Enriching candidate {i}/{len(top_candidates)}: {candidate.name}")
+                logger.info(f"Scoring candidate {i}/{len(top_candidates)}: {candidate.name}")
+                # Score the match (using entity_type="partner")
+                match_score = self.scorer.score_match(candidate, context, "partner")
+                candidate.match_score = match_score
+                scored_candidates.append(candidate)
+
+            logger.info(f"Scored {len(scored_candidates)} candidates")
+
+            # Step 5: Enrich candidates
+            logger.info(f"Step 5: Enriching {len(scored_candidates)} candidates")
+            enriched_candidates = []
+
+            for i, candidate in enumerate(scored_candidates, 1):
+                logger.info(f"Enriching candidate {i}/{len(scored_candidates)}: {candidate.name}")
                 enriched = self._enrich_partner_info(candidate)
                 enriched_candidates.append(enriched)
 
             logger.info(f"Enriched {len(enriched_candidates)} candidates")
 
-            # Step 5: Create and return DiscoveryResult
+            # Step 6: Generate rationales
+            logger.info(f"Step 6: Generating rationales for {len(enriched_candidates)} candidates")
+            for i, candidate in enumerate(enriched_candidates, 1):
+                logger.info(f"Generating rationale {i}/{len(enriched_candidates)}: {candidate.name}")
+                rationale = self.rationale_gen.generate_rationale(
+                    candidate, context, candidate.match_score, "partner"
+                )
+                candidate.rationale = rationale
+
+            logger.info(f"Generated {len(enriched_candidates)} rationales")
+
+            # Step 7: Sort by overall score (descending - best matches first)
+            logger.info("Step 7: Sorting results by match score")
+            enriched_candidates.sort(
+                key=lambda c: c.match_score.overall_score if c.match_score else 0.0,
+                reverse=True
+            )
+
+            # Calculate average score
+            total_score = sum(
+                c.match_score.overall_score for c in enriched_candidates if c.match_score
+            )
+            avg_score = total_score / len(enriched_candidates) if enriched_candidates else 0.0
+
+            # Step 8: Create and return DiscoveryResult
             result = DiscoveryResult(
                 entity_type="partner",
                 companies=enriched_candidates,
                 query_used=", ".join(queries),
+                scored=True,
+                avg_score=avg_score,
             )
 
             logger.info(
-                f"Partner discovery completed: {len(result.companies)} qualified candidates"
+                f"Partner discovery completed: {len(result.companies)} qualified candidates, "
+                f"avg score: {avg_score:.1f}"
             )
             return result
 

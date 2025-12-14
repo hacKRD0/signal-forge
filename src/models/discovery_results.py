@@ -8,6 +8,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
+from .match_score import MatchScore
+from .rationale import Rationale
+
 
 @dataclass
 class CompanyInfo:
@@ -28,6 +31,8 @@ class CompanyInfo:
     size_estimate: str = "Unknown"
     description: str = ""
     sources: List[str] = field(default_factory=list)
+    match_score: Optional[MatchScore] = None
+    rationale: Optional[Rationale] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert CompanyInfo to dictionary for JSON serialization.
@@ -35,7 +40,7 @@ class CompanyInfo:
         Returns:
             dict: Dictionary representation of the company info
         """
-        return {
+        result = {
             "name": self.name,
             "website": self.website,
             "locations": self.locations,
@@ -43,6 +48,15 @@ class CompanyInfo:
             "description": self.description,
             "sources": self.sources,
         }
+
+        # Add optional scoring fields if present
+        if self.match_score is not None:
+            result["match_score"] = self.match_score.to_dict()
+
+        if self.rationale is not None:
+            result["rationale"] = self.rationale.to_dict()
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CompanyInfo":
@@ -54,6 +68,15 @@ class CompanyInfo:
         Returns:
             CompanyInfo: New CompanyInfo instance
         """
+        # Parse optional scoring fields
+        match_score = None
+        if "match_score" in data and data["match_score"]:
+            match_score = MatchScore.from_dict(data["match_score"])
+
+        rationale = None
+        if "rationale" in data and data["rationale"]:
+            rationale = Rationale.from_dict(data["rationale"])
+
         return cls(
             name=data.get("name", ""),
             website=data.get("website", ""),
@@ -61,6 +84,8 @@ class CompanyInfo:
             size_estimate=data.get("size_estimate", "Unknown"),
             description=data.get("description", ""),
             sources=data.get("sources", []),
+            match_score=match_score,
+            rationale=rationale,
         )
 
     def __eq__(self, other: object) -> bool:
@@ -98,12 +123,16 @@ class DiscoveryResult:
         companies: List of discovered companies
         query_used: The search query that produced these results
         timestamp: When the discovery was performed
+        scored: Whether scoring has been applied to the results
+        avg_score: Average match score across all companies
     """
 
     entity_type: str
     companies: List[CompanyInfo] = field(default_factory=list)
     query_used: str = ""
     timestamp: datetime = field(default_factory=datetime.utcnow)
+    scored: bool = False
+    avg_score: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert DiscoveryResult to dictionary for JSON serialization.
@@ -116,6 +145,8 @@ class DiscoveryResult:
             "companies": [company.to_dict() for company in self.companies],
             "query_used": self.query_used,
             "timestamp": self.timestamp.isoformat(),
+            "scored": self.scored,
+            "avg_score": self.avg_score,
         }
 
     @classmethod
@@ -148,6 +179,8 @@ class DiscoveryResult:
             companies=companies,
             query_used=data.get("query_used", ""),
             timestamp=timestamp,
+            scored=data.get("scored", False),
+            avg_score=data.get("avg_score", 0.0),
         )
 
     def add_company(self, company: CompanyInfo) -> None:
