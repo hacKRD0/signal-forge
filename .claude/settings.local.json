@@ -28,7 +28,8 @@
       "Bash([ -f \"D:\\easevertical\\.planning\\phases\\04-rationale-scoring-agent\\04-03-SUMMARY.md\" ])",
       "Bash([ -f \"D:\\easevertical\\.planning\\phases\\05-ui-presentation\\05-01-SUMMARY.md\" ])",
       "Bash(python:*)",
-      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\05-ui-presentation\\05-02-SUMMARY.md\" ])"
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\05-ui-presentation\\05-02-SUMMARY.md\" ])",
+      "Bash([ -f \"D:\\easevertical\\.planning\\phases\\05-ui-presentation\\05-03-SUMMARY.md\" ])"
     ],
     "deny": [],
     "ask": []

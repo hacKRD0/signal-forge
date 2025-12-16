@@ -15,6 +15,7 @@ from src.ui.components import render_header, render_file_uploader, render_contex
 from src.ui.document_processor import process_uploaded_files
 from src.ui.discovery_runner import run_discovery
 from src.ui.error_handler import handle_discovery_error, validate_discovery_preconditions, show_discovery_info
+from src.ui.results_display import render_results_table, render_company_detail, render_results_downloads
 from src.agent.discovery_agent import DiscoveryAgent
 from src.agent.context_extractor import ContextExtractor
 
@@ -168,6 +169,54 @@ else:
     st.header("2. Discovery Query")
     st.info("Upload and process documents first to enable discovery")
 
-# Results section (placeholder for now)
+# Results section
 st.header("3. Discovery Results")
-st.info("Results will be displayed here after running discovery")
+
+# Create tabs for Customers and Partners
+customer_tab, partner_tab = st.tabs(["Customers", "Partners"])
+
+# Customers Tab
+with customer_tab:
+    if st.session_state.discovery_results_customers:
+        # Display results table
+        render_results_table(
+            st.session_state.discovery_results_customers,
+            "Customer"
+        )
+
+        # Display individual company details
+        st.subheader("Company Details")
+        for idx, company in enumerate(st.session_state.discovery_results_customers.companies, 1):
+            render_company_detail(company, idx)
+
+        # Download buttons
+        st.markdown("---")
+        render_results_downloads(
+            st.session_state.discovery_results_customers,
+            "Customer"
+        )
+    else:
+        st.info("No customer results yet. Run discovery above to see results.")
+
+# Partners Tab
+with partner_tab:
+    if st.session_state.discovery_results_partners:
+        # Display results table
+        render_results_table(
+            st.session_state.discovery_results_partners,
+            "Partner"
+        )
+
+        # Display individual company details
+        st.subheader("Company Details")
+        for idx, company in enumerate(st.session_state.discovery_results_partners.companies, 1):
+            render_company_detail(company, idx)
+
+        # Download buttons
+        st.markdown("---")
+        render_results_downloads(
+            st.session_state.discovery_results_partners,
+            "Partner"
+        )
+    else:
+        st.info("No partner results yet. Run discovery above to see results.")
