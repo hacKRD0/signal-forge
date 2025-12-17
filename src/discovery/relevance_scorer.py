@@ -22,7 +22,7 @@ class RelevanceScorer:
     matches the business context as a potential customer or partner. Scores
     range from 0.0 (not relevant) to 1.0 (highly relevant).
 
-    Relevance threshold: >= 0.6 is considered relevant
+    Relevance threshold: >= 0.3 is considered relevant
 
     Example:
         >>> from src.agent.discovery_agent import DiscoveryAgent
@@ -45,7 +45,7 @@ class RelevanceScorer:
         Relevance score: 0.85
     """
 
-    RELEVANCE_THRESHOLD = 0.6  # Minimum score to be considered relevant
+    RELEVANCE_THRESHOLD = 0.3  # Minimum score to be considered relevant
 
     def __init__(self, agent: DiscoveryAgent):
         """Initialize the relevance scorer.
@@ -62,7 +62,7 @@ class RelevanceScorer:
         self.agent = agent
         self._score_cache: Dict[str, float] = {}  # Cache to avoid re-scoring
 
-        logger.info("RelevanceScorer initialized with threshold=0.6")
+        logger.info("RelevanceScorer initialized with threshold=0.3")
 
     def score_customer_relevance(
         self, company: CompanyInfo, context: BusinessContext
@@ -339,7 +339,7 @@ Return ONLY a JSON object with your score and brief reasoning:
 
         Example:
             >>> scored = [(company1, 0.9), (company2, 0.5), (company3, 0.7)]
-            >>> filtered = scorer.filter_by_threshold(scored, threshold=0.6)
+            >>> filtered = scorer.filter_by_threshold(scored, threshold=0.3)
             >>> print(len(filtered))
             2
         """

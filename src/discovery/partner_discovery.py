@@ -247,7 +247,7 @@ class PartnerDiscovery:
 
         Uses RelevanceScorer to score each candidate based on partnership fit
         (complementary services, integration opportunities, shared target market).
-        Keeps candidates with score >= 0.6 (RELEVANCE_THRESHOLD).
+        Keeps candidates with score >= 0.3 (RELEVANCE_THRESHOLD).
         Returns top 15-20 candidates for efficiency.
 
         Args:
@@ -271,15 +271,14 @@ class PartnerDiscovery:
             candidates, context, entity_type="partner"
         )
 
-        # Filter by relevance threshold (>= 0.6)
+        # Filter by relevance threshold (>= 0.3)
         relevant_candidates = self.relevance_scorer.filter_by_threshold(
             scored_candidates,
             threshold=RelevanceScorer.RELEVANCE_THRESHOLD,
         )
 
-        # Limit to 15-20 candidates for enrichment efficiency
-        # (We'll enrich only top 10, but keeping 15-20 gives us buffer)
-        max_candidates = 20
+        # Limit to top 10 candidates
+        max_candidates = 10
         filtered = relevant_candidates[:max_candidates]
 
         logger.info(

@@ -58,10 +58,7 @@ def create_discovery_agent(
                 "in your .env file."
             )
 
-        # Configure the Google ADK client
-        genai.configure(api_key=config.google_api_key)
-
-        # Create client instance
+        # Create client instance directly - google-genai SDK doesn't use configure()
         client = genai.Client(api_key=config.google_api_key)
 
         logger.info(
