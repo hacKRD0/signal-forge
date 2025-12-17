@@ -24,3 +24,7 @@ logs/
 
 # Project specific
 docs/
+
+# Data folder - ignore contents but keep folder
+data/*
+!data/.gitkeep
